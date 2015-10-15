@@ -1,6 +1,6 @@
 import pickle
 import numpy as np 
-
+from sklearn.cluster import SpectralClustering
 
 def calculate_transition_probabilities(links , attributes , w = [1.,1.]):
 
@@ -48,7 +48,7 @@ def calculate_random_walk_distance(transition_p , n , c=0.2 , l=2):
     return random_d
 
 
-def cluster(random_d , n , k=7, sigma=1):
+def cluster(random_d , n , k=5, sigma=1 , max_iter = 6):
 
     # Calculating node densities.
     # densities = np.ones(random_d.shape) - np.exp(-np.square(random_d)/(sigma**2))
@@ -64,7 +64,7 @@ def cluster(random_d , n , k=7, sigma=1):
     cluster_averages = np.empty((k,n))
     
     iteration=0
-    while not convergence and iteration < 20:
+    while not convergence and iteration < max_iter:
 
         # print assignments.shape
         # assign nodes to nearest clusters.
@@ -115,6 +115,13 @@ def cluster(random_d , n , k=7, sigma=1):
 
         iteration+=1
 
+
+def spectral_cluster(random_d ,attributes, k = 5 ,):
+    spc = SpectralClustering(n_clusters=k , affinity='precomputed')
+    assignments = spc.fit_predict(random_d)
+    for i in range(k):
+        current_members = np.where(assignments==i)[0]
+        print "Cluster" , i , "Members" , current_members.size , "Attributes" , np.mean(attributes[current_members])
         
 
 attribute_links = pickle.load(open('pol_data.p','rb'))
@@ -129,6 +136,7 @@ l = 2
 
 transition_p = calculate_transition_probabilities(links,attributes)
 random_d = calculate_random_walk_distance(transition_p,n)
-cluster(random_d , n)
+# cluster(random_d , n)
+spectral_cluster(random_d , attributes)
 
 
